@@ -64,7 +64,7 @@ the German is read from your disk image at build time.
 | | |
 |---|---|
 | ![City screen](screenshots/city.png) | ![Bank](screenshots/bank.png) |
-| ![Travel](screenshots/travel.png) | |
+| ![Travel](screenshots/travel.png) | ![News during travel](screenshots/notice.png) |
 
 ## Known limitations
 
