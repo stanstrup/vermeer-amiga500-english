@@ -1,0 +1,87 @@
+{
+  "_comment": "DATEN.VAM line table, keyed by 0-based line index. Lines not listed keep their German (many already are valid Danish words, e.g. city names, 'Bank', 'Kredit', 'Auktion'); numeric lines are game data and are rejected by the build. Lengths are free, but entries the game prints in fixed columns are padded here to the original width.",
+
+  "_menu_travel": "18-23",
+  "18": "Rejse",
+  "20": "Handel",
+  "22": "Arbejdere",
+  "23": "Oversigt",
+
+  "_menu_city": "24-30",
+  "24": "Rejse",
+  "26": "Handel",
+  "28": "Samling",
+  "29": "Galleri",
+  "30": "Oversigt",
+
+  "_menu_estate": "31-34",
+  "31": "Dyrkning",
+  "32": "Jordkøb",
+  "33": "Jordsalg",
+  "34": "Jordreform",
+
+  "_goods_fixed_width_6": "35-38",
+  "35": "Kaffe ",
+  "36": "Tobak ",
+  "37": "Te    ",
+  "38": "Kakao ",
+
+  "_bank": "39-43",
+  "39": "Aktier",
+  "42": "Åbn",
+  "43": "Luk",
+
+  "_market": "48-49",
+  "48": "Køb",
+  "49": "Sælg",
+
+  "_workers": "50-53",
+  "50": "Ansæt",
+  "51": "Afskedig",
+  "52": "Løn",
+  "53": "Hverve",
+
+  "_pictures": "54-60",
+  "54": "Køb",
+  "56": "Udpak",
+  "57": "Omhæng",
+  "58": "Indpak",
+  "59": "Sælg",
+  "60": "Vurdering",
+
+  "_credit": "63-64",
+  "63": "Afdrag",
+  "64": "Optage",
+
+  "_overview": "65-67",
+  "65": "Rute",
+  "66": "Kurser",
+  "67": "Gem spil",
+
+  "_periods": "131-137",
+  "131": "Barok",
+  "132": "Klassicisme",
+  "134": "Impressionisme",
+  "135": "Symbolisme",
+  "136": "Ekspressionisme",
+
+  "_weekdays": "138-144",
+  "138": "Søndag",
+  "139": "Mandag",
+  "140": "Tirsdag",
+  "141": "Onsdag",
+  "142": "Torsdag",
+  "143": "Fredag",
+  "144": "Lørdag",
+
+  "_months_fixed_width_4": "145-156",
+  "147": "Mar.",
+  "149": "Maj ",
+  "156": "Dec.",
+
+  "_crops": "157-161",
+  "157": "Græs",
+  "158": "Kaffe",
+  "159": "Tobak",
+  "160": "Te"
+}

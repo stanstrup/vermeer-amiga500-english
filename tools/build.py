@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Build the English Vermeer disk from the German original plus translations.
+"""Build a translated Vermeer disk from the German original plus translations.
 
-    python tools/build_en.py [-o output.adf] [--report]
+    python tools/build.py --lang en [-o output.adf] [--report]
+    python tools/build.py --lang da [-o output.adf] [--report]
 
 Three text sources are patched:
 
   vermeer      the executable's inline string literals, addressed by file
-               offset (translation/exe.json).  Slot sizes never change.
+               offset (translation/<lang>/exe.json).  Slot sizes never change.
   DATEN.VAM    a CRLF line table of menu entries, place names, painters and
                numeric game data, addressed by line index
-               (translation/daten.json).  Lengths are free.
+               (translation/<lang>/daten.json).  Lengths are free.
   v.his/A..N   historical event text, one file per period, replaced wholesale
-               from translation/vhis/*.txt.  Lengths are free.
+               from translation/<lang>/vhis/*.txt.  Lengths are free.
 
 Every step is verified: the executable is re-scanned to prove no literal moved
 and no byte outside a literal changed, the numeric lines of DATEN.VAM must come
@@ -29,22 +30,21 @@ import exestr
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 SOURCE = os.path.join(ROOT, 'Vermeer (1988)(Ariolasoft)(DE).adf')
-TRANS = os.path.join(ROOT, 'translation')
 
 EXE = '/vermeer'
 DATEN = '/DATEN.VAM'
 VHIS = [f'/v.his/{c}' for c in 'ABCDEFGHIJKLMN']
 
 
-def load(name):
+def load(trans, name):
     """Load a translation file, dropping '_'-prefixed keys used for comments."""
-    with open(os.path.join(TRANS, name), encoding='utf-8') as f:
+    with open(os.path.join(trans, name), encoding='utf-8') as f:
         return {k: v for k, v in json.load(f).items() if not k.startswith('_')}
 
 
-def patch_exe(disk, report):
+def patch_exe(disk, trans, report):
     data = disk.read_file(EXE)
-    wanted = {int(k, 16): v for k, v in load('exe.json').items()}
+    wanted = {int(k, 16): v for k, v in load(trans, 'exe.json').items()}
     slots = {s.offset: s for s in exestr.scan(data)}
 
     too_long = []
@@ -92,10 +92,10 @@ def _group_width(lines, idx):
     return max(len(lines[i]) for i in range(lo, hi + 1))
 
 
-def patch_daten(disk, report):
+def patch_daten(disk, trans, report):
     raw = disk.read_file(DATEN).decode('latin-1')
     lines = raw.split('\r\n')
-    wanted = {int(k): v for k, v in load('daten.json').items()}
+    wanted = {int(k): v for k, v in load(trans, 'daten.json').items()}
     for idx, text in wanted.items():
         if idx >= len(lines):
             raise SystemExit(f'daten.json: line {idx} is past the end of the file')
@@ -116,11 +116,11 @@ def patch_daten(disk, report):
     return len(wanted)
 
 
-def patch_vhis(disk, report):
+def patch_vhis(disk, trans, report):
     count = 0
     for path in VHIS:
         name = path.rsplit('/', 1)[1]
-        src = os.path.join(TRANS, 'vhis', name + '.txt')
+        src = os.path.join(trans, 'vhis', name + '.txt')
         if not os.path.exists(src):
             continue
         old = disk.read_file(path).decode('latin-1')
@@ -143,13 +143,24 @@ def patch_vhis(disk, report):
     return count
 
 
+LANGS = {
+    'en': 'EN',
+    'da': 'DA',
+}
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument('--lang', choices=sorted(LANGS), required=True,
+                    help='translation to build (translation/<lang>/)')
     ap.add_argument('-o', '--output',
-                    default=os.path.join(ROOT, 'Vermeer (1988)(Ariolasoft)(EN).adf'))
+                    help='defaults to Vermeer (1988)(Ariolasoft)(<LANG>).adf')
     ap.add_argument('--report', action='store_true',
                     help='list every replacement made')
     args = ap.parse_args()
+    tag = LANGS[args.lang]
+    output = args.output or os.path.join(ROOT, f'Vermeer (1988)(Ariolasoft)({tag}).adf')
+    trans = os.path.join(ROOT, 'translation', args.lang)
 
     disk = adflib.ADF(SOURCE)
     problems = disk.validate()
@@ -157,9 +168,9 @@ def main():
         raise SystemExit('the source image is already damaged:\n  ' + '\n  '.join(problems))
 
     report = [] if args.report else None
-    n_exe = patch_exe(disk, report)
-    n_daten = patch_daten(disk, report)
-    n_vhis = patch_vhis(disk, report)
+    n_exe = patch_exe(disk, trans, report)
+    n_daten = patch_daten(disk, trans, report)
+    n_vhis = patch_vhis(disk, trans, report)
 
     problems = disk.validate()
     if problems:
@@ -173,11 +184,11 @@ def main():
         if original.read_file(path) != disk.read_file(path):
             raise SystemExit(f'unexpected change to {path}')
 
-    disk.save(args.output)
+    disk.save(output)
     if report:
         print('\n'.join(report))
     print(f'{n_exe} literals, {n_daten} data lines, {n_vhis} history files translated')
-    print(f'wrote {args.output}')
+    print(f'wrote {output}')
 
 
 if __name__ == '__main__':

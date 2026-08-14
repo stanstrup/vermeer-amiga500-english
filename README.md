@@ -1,13 +1,14 @@
-# Vermeer — English translation patch
+# Vermeer — English & Danish translation patches
 
-A fan translation patch for *Vermeer* (Ariolasoft, 1988), the German
-art-dealing economic simulation for the Amiga 500.
+Fan translation patches for *Vermeer* (Ariolasoft, 1988), the German
+art-dealing economic simulation for the Amiga 500. English and Danish are
+both supported.
 
 ![Title screen](screenshots/title.png)
 
-This repository does not contain the game. It contains a patch, and the
-tools that build it, which turn your own copy of the German
-`Vermeer (1988)(Ariolasoft)(DE).adf` into an English one.
+This repository does not contain the game. It contains patches, and the
+tools that build them, which turn your own copy of the German
+`Vermeer (1988)(Ariolasoft)(DE).adf` into an English or Danish one.
 
 You need:
 
@@ -18,12 +19,14 @@ You need:
 
 ## Apply the patch
 
-`vermeer-en.ips` is a standard [IPS patch](https://zerosoft.zophar.net/ips.php).
-Apply it with any IPS patcher — Floating IPS and Lunar IPS both work on
-Windows — or with the script included here:
+`vermeer-en.ips` and `vermeer-da.ips` are standard
+[IPS patches](https://zerosoft.zophar.net/ips.php). Apply either with any
+IPS patcher — Floating IPS and Lunar IPS both work on Windows — or with
+the script included here:
 
 ```
 python tools/ips.py apply "Vermeer (1988)(Ariolasoft)(DE).adf" vermeer-en.ips "Vermeer (1988)(Ariolasoft)(EN).adf"
+python tools/ips.py apply "Vermeer (1988)(Ariolasoft)(DE).adf" vermeer-da.ips "Vermeer (1988)(Ariolasoft)(DA).adf"
 ```
 
 Load the resulting file as drive DF0 in your emulator. The disk boots
@@ -31,14 +34,16 @@ itself.
 
 ## Building from source
 
-`translation/` holds the English text; `tools/build_en.py` rebuilds the
-disk image (and the `.ips` patch) from your own German original:
+`translation/<lang>/` holds the translated text (`en` and `da`);
+`tools/build.py` rebuilds the disk image (and the `.ips` patch) from your
+own German original:
 
 ```
-python tools/build_en.py                            # DE image + translation/ -> EN image
-python tools/build_en.py --report                    # ... and list every replacement
-python tools/ips.py make "Vermeer (1988)(Ariolasoft)(DE).adf" "Vermeer (1988)(Ariolasoft)(EN).adf" vermeer-en.ips
-python tools/adf.py "Vermeer (1988)(Ariolasoft)(EN).adf" check
+python tools/build.py --lang en                      # DE image + translation/en/ -> EN image
+python tools/build.py --lang da                      # DE image + translation/da/ -> DA image
+python tools/build.py --lang da --report              # ... and list every replacement
+python tools/ips.py make "Vermeer (1988)(Ariolasoft)(DE).adf" "Vermeer (1988)(Ariolasoft)(DA).adf" vermeer-da.ips
+python tools/adf.py "Vermeer (1988)(Ariolasoft)(DA).adf" check
 ```
 
 The build refuses to produce an image unless every check passes: each
@@ -48,16 +53,24 @@ untouched, and the rebuilt filesystem validates.
 
 ## What's translated
 
-| Source | Coverage |
-| --- | --- |
-| `vermeer` (executable) | 195 of 354 display strings — the rest are runtime call names, file paths and punctuation |
-| `DATEN.VAM` | 72 of 351 lines — menus, city names, painters, art periods, weekdays, months, crops; the remaining lines are numeric game data |
-| `v.his/A` … `N` | all 14 files — 1918–1932 news headlines and random events |
+| Source | English coverage | Danish coverage |
+| --- | --- | --- |
+| `vermeer` (executable) | 195 of 354 display strings | 186 of 354 display strings |
+| `DATEN.VAM` | 72 of 351 lines | 56 of 351 lines |
+| `v.his/A` … `N` | all 14 files | all 14 files |
 
-Translations live in `translation/`: `exe.json` (keyed by executable file
-offset), `daten.json` (keyed by line number in `DATEN.VAM`), and
-`vhis/*.txt` (whole-file replacements). Only the English text is stored;
-the German is read from your disk image at build time.
+The rest of the executable's strings are runtime call names, file paths
+and punctuation. The untranslated `DATEN.VAM` lines are numeric game data
+plus, for Danish, entries that are already valid Danish as-is (city names
+like `Bank`, `Kredit`, `Auktion`, `Lissabon`, `Dollar`, `Alle`). `v.his/A`
+through `N` are 1918–1932 news headlines and random events, translated in
+full for both languages.
+
+Translations live in `translation/<lang>/`: `exe.json` (keyed by
+executable file offset), `daten.json` (keyed by line number in
+`DATEN.VAM`), and `vhis/*.txt` (whole-file replacements). Only the
+translated text is stored; the German is read from your disk image at
+build time.
 
 ## Screenshots
 
@@ -66,7 +79,15 @@ the German is read from your disk image at build time.
 | ![City screen](screenshots/city.png) | ![Bank](screenshots/bank.png) |
 | ![Travel](screenshots/travel.png) | ![News during travel](screenshots/notice.png) |
 
+Danish:
+
+| | |
+|---|---|
+| ![City screen (Danish)](screenshots/city-da.png) | ![Bank (Danish)](screenshots/bank-da.png) |
+
 ## Known limitations
+
+These apply to both languages, since both patch the same code:
 
 * Two screen titles stay German: **Reisen in Berlin** (travel) and
   **Markt in Ankara** (market) — the city name is translated, "Reisen"
@@ -76,10 +97,10 @@ the German is read from your disk image at build time.
   same reason. It's overwritten as soon as you type.
 * The world map has `LISSABON` and `RIO DE JANEIRO` painted into the
   graphic as pixels, not text.
-* Dates read "24. May" rather than "May 24" — the day/month order is
-  assembled in code.
+* Dates read "24. May" / "24. maj" rather than "May 24" — the day/month
+  order is assembled in code.
 * A few menu labels are shortened to fit a fixed-width slot the compiler
-  reserved (e.g. `Job market`, `Exchange`).
+  reserved (e.g. `Job market`/`Jobmarked`, `Exchange`/`Kurser`).
 
 ## Development
 
